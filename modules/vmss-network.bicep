@@ -4,6 +4,9 @@ param location string = 'australiaeast'
 @description('The name of the virtual network.')
 param vnetName string
 
+@description('The domain name label to attach to the load balancer\'s public IP address. This value must be globally unique.')
+param loadBalancerPublicIPAddressDomainNameLabel string = 'lb-${uniqueString(resourceGroup().id)}'
+
 var vnetAddressPrefix = '10.0.0.0/16'
 var vnetDefaultSubnetAddressPrefix = '10.0.0.0/24'
 var networkSecurityGroupName = 'AllowRdpHttp'
@@ -71,7 +74,7 @@ resource loadBalancerPublicIPAddress 'Microsoft.Network/publicIPAddresses@2021-0
   properties: {
     publicIPAllocationMethod: 'Static'
     dnsSettings: {
-      domainNameLabel: loadBalancerName
+      domainNameLabel: loadBalancerPublicIPAddressDomainNameLabel
     }
   }
 }
