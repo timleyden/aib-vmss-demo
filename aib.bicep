@@ -61,7 +61,7 @@ resource azureImageBuilder 'Microsoft.VirtualMachineImages/imageTemplates@2020-0
         name: 'installIIS'
         runElevated: true
         inline: [
-          loadTextContent('aib-customize.ps1')
+          loadTextContent('scripts/aib-customize.ps1')
         ]
       }
     ]

@@ -24,7 +24,6 @@ var vmssUpgradePolicy = {
 var vmssDiagnosticStorageAccountName = 'strdiag${uniqueString(resourceGroup().id)}'
 var vmssDiagnosticStorageAccountSku = {
   name:'Standard_LRS'
-  tier:'Standard'
 }
 
 resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-03-01' = {
@@ -53,8 +52,8 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-03-01' = {
               publisher: 'Microsoft.Compute'
               type: 'CustomScriptExtension'
               typeHandlerVersion: '1.10'
-              protectedSettings: { // TODO load from file
-                commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -EncodedCommand "UwBlAHQALQBDAG8AbgB0AGUAbgB0ACAAQwA6AFwAaQBuAGUAdABwAHUAYgBcAHcAdwB3AHIAbwBvAHQAXABkAGUAZgBhAHUAbAB0AC4AYQBzAHAAeAAgAC0AVgBhAGwAdQBlACAAIgA8ACUAIABAACAAUABhAGcAZQAgAEwAYQBuAGcAdQBhAGcAZQA9AGAAIgBDACMAYAAiACAAJQA+AGAAbgA8ACUAYABuAGYAbwByAGUAYQBjAGgAIAAoAHMAdAByAGkAbgBnACAAdgBhAHIAIABpAG4AIABSAGUAcQB1AGUAcwB0AC4AUwBlAHIAdgBlAHIAVgBhAHIAaQBhAGIAbABlAHMAKQBgAG4AewBgAG4AIAAgAFIAZQBzAHAAbwBuAHMAZQAuAFcAcgBpAHQAZQAoAHYAYQByACAAKwAgAGAAIgAgAGAAIgAgACsAIABSAGUAcQB1AGUAcwB0AFsAdgBhAHIAXQAgACsAIABgACIAPABiAHIAPgBgACIAKQA7AGAAbgB9AGAAbgAlAD4AIgAgACAALQBOAG8ATgBlAHcAbABpAG4AZQA7AGkAZgAoAHQAZQBzAHQALQBwAGEAdABoACAAQwA6AFwAaQBuAGUAdABwAHUAYgBcAHcAdwB3AHIAbwBvAHQAXABpAGkAcwBzAHQAYQByAHQALgBoAHQAbQApAHsAIAByAGUAbgBhAG0AZQAtAEkAdABlAG0AIABDADoAXABpAG4AZQB0AHAAdQBiAFwAdwB3AHcAcgBvAG8AdABcAGkAaQBzAHMAdABhAHIAdAAuAGgAdABtACAAaQBpAHMAcwB0AGEAcgB0AC4AaAB0AG0AbAAuAGEAcgBjAGgAaQB2AGUAfQA="'
+              protectedSettings: {
+                commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -EncodedCommand ${loadFileAsBase64('scripts/vmss-configure-iis.ps1')}'
               }
             }
           }
