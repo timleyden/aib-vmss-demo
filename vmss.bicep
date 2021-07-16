@@ -2,7 +2,7 @@
 param location string = 'australiaeast'
 
 @description('The resource ID of the image to deploy to the virtual machine.')
-param imageid string = '/subscriptions/3af535d9-6651-4c1b-b0f6-d55561e42bb0/resourceGroups/my-rg/providers/Microsoft.Compute/galleries/aibsig/images/win2k19iis'
+param vmssImageResourceId string
 
 @description('The username for the administrator account on the VMSS instances.')
 param vmssAdministratorUsername string = 'sysadmin'
@@ -27,13 +27,6 @@ var vmssDiagnosticStorageAccountSku = {
   tier:'Standard'
 }
 
-module network 'modules/vmss-network.bicep' = {
-  name: 'vmss-network'
-  params: {
-    vnetName: vnetName    
-  }
-}
-
 resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-03-01' = {
   name: vmssName
   location: location
@@ -45,7 +38,7 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-03-01' = {
     virtualMachineProfile: {
       storageProfile: {
         imageReference: {
-          id: imageid
+          id: vmssImageResourceId
         }
         osDisk: {
           createOption: 'FromImage'
@@ -61,7 +54,7 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-03-01' = {
               type: 'CustomScriptExtension'
               typeHandlerVersion: '1.10'
               protectedSettings: { // TODO load from file
-                commandToExecute:'powershell.exe -ExecutionPolicy Unrestricted -EncodedCommand "UwBlAHQALQBDAG8AbgB0AGUAbgB0ACAAQwA6AFwAaQBuAGUAdABwAHUAYgBcAHcAdwB3AHIAbwBvAHQAXABkAGUAZgBhAHUAbAB0AC4AYQBzAHAAeAAgAC0AVgBhAGwAdQBlACAAIgA8ACUAIABAACAAUABhAGcAZQAgAEwAYQBuAGcAdQBhAGcAZQA9AGAAIgBDACMAYAAiACAAJQA+AGAAbgA8ACUAYABuAGYAbwByAGUAYQBjAGgAIAAoAHMAdAByAGkAbgBnACAAdgBhAHIAIABpAG4AIABSAGUAcQB1AGUAcwB0AC4AUwBlAHIAdgBlAHIAVgBhAHIAaQBhAGIAbABlAHMAKQBgAG4AewBgAG4AIAAgAFIAZQBzAHAAbwBuAHMAZQAuAFcAcgBpAHQAZQAoAHYAYQByACAAKwAgAGAAIgAgAGAAIgAgACsAIABSAGUAcQB1AGUAcwB0AFsAdgBhAHIAXQAgACsAIABgACIAPABiAHIAPgBgACIAKQA7AGAAbgB9AGAAbgAlAD4AIgAgACAALQBOAG8ATgBlAHcAbABpAG4AZQA7AGkAZgAoAHQAZQBzAHQALQBwAGEAdABoACAAQwA6AFwAaQBuAGUAdABwAHUAYgBcAHcAdwB3AHIAbwBvAHQAXABpAGkAcwBzAHQAYQByAHQALgBoAHQAbQApAHsAIAByAGUAbgBhAG0AZQAtAEkAdABlAG0AIABDADoAXABpAG4AZQB0AHAAdQBiAFwAdwB3AHcAcgBvAG8AdABcAGkAaQBzAHMAdABhAHIAdAAuAGgAdABtACAAaQBpAHMAcwB0AGEAcgB0AC4AaAB0AG0AbAAuAGEAcgBjAGgAaQB2AGUAfQA="'
+                commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -EncodedCommand "UwBlAHQALQBDAG8AbgB0AGUAbgB0ACAAQwA6AFwAaQBuAGUAdABwAHUAYgBcAHcAdwB3AHIAbwBvAHQAXABkAGUAZgBhAHUAbAB0AC4AYQBzAHAAeAAgAC0AVgBhAGwAdQBlACAAIgA8ACUAIABAACAAUABhAGcAZQAgAEwAYQBuAGcAdQBhAGcAZQA9AGAAIgBDACMAYAAiACAAJQA+AGAAbgA8ACUAYABuAGYAbwByAGUAYQBjAGgAIAAoAHMAdAByAGkAbgBnACAAdgBhAHIAIABpAG4AIABSAGUAcQB1AGUAcwB0AC4AUwBlAHIAdgBlAHIAVgBhAHIAaQBhAGIAbABlAHMAKQBgAG4AewBgAG4AIAAgAFIAZQBzAHAAbwBuAHMAZQAuAFcAcgBpAHQAZQAoAHYAYQByACAAKwAgAGAAIgAgAGAAIgAgACsAIABSAGUAcQB1AGUAcwB0AFsAdgBhAHIAXQAgACsAIABgACIAPABiAHIAPgBgACIAKQA7AGAAbgB9AGAAbgAlAD4AIgAgACAALQBOAG8ATgBlAHcAbABpAG4AZQA7AGkAZgAoAHQAZQBzAHQALQBwAGEAdABoACAAQwA6AFwAaQBuAGUAdABwAHUAYgBcAHcAdwB3AHIAbwBvAHQAXABpAGkAcwBzAHQAYQByAHQALgBoAHQAbQApAHsAIAByAGUAbgBhAG0AZQAtAEkAdABlAG0AIABDADoAXABpAG4AZQB0AHAAdQBiAFwAdwB3AHcAcgBvAG8AdABcAGkAaQBzAHMAdABhAHIAdAAuAGgAdABtACAAaQBpAHMAcwB0AGEAcgB0AC4AaAB0AG0AbAAuAGEAcgBjAGgAaQB2AGUAfQA="'
               }
             }
           }
@@ -121,6 +114,13 @@ resource vmssDiagnosticStorage 'Microsoft.Storage/storageAccounts@2021-04-01'={
   name: vmssDiagnosticStorageAccountName
   kind: 'StorageV2'
   sku: vmssDiagnosticStorageAccountSku
+}
+
+module network 'modules/vmss-network.bicep' = {
+  name: 'vmss-network'
+  params: {
+    vnetName: vnetName    
+  }
 }
 
 resource vnet 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {

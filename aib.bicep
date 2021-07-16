@@ -1,7 +1,16 @@
 @description('The location into which the Azure resources should be deployed.')
 param location string = 'australiaeast'
 
-var roleDefinitionId = {
+var sharedImageGalleryName = 'aibsig'
+var azureImageBuilderSource = {
+  type:'PlatformImage'
+  publisher:'MicrosoftWindowsServer'
+  offer:'WindowsServer'
+  sku:'2019-Datacenter'
+  version:'latest'
+}
+var azureImageBuilderIdentityName = 'aibuseridentity'
+var roleDefinitionIds = {
   Owner: {
     id: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')
   }
@@ -13,28 +22,13 @@ var roleDefinitionId = {
   }
 }
 
-resource userAssignedManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+resource sharedImageGallery 'Microsoft.Compute/galleries@2020-09-30' = {
   location: location
-  name: 'aibuseridentity'
-}
-
-resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(sig.id, userAssignedManagedIdentity.id, roleDefinitionId.Contributor.id)
-  scope: sig
-  properties: {
-    principalType: 'ServicePrincipal'
-    principalId: userAssignedManagedIdentity.properties.principalId
-    roleDefinitionId: roleDefinitionId.Contributor.id
-  }
-}
-
-resource sig 'Microsoft.Compute/galleries@2020-09-30' = {
-  location: location
-  name: 'aibsig'
+  name: sharedImageGalleryName
 }
 
 resource image 'Microsoft.Compute/galleries/images@2020-09-30' = {
-  parent:sig
+  parent: sharedImageGallery
   name: 'win2k19iis'
   location: location
   properties: {
@@ -48,44 +42,56 @@ resource image 'Microsoft.Compute/galleries/images@2020-09-30' = {
   }
 }
 
+var azureImageBuilderName = 'aibdemo'
+
 resource azureImageBuilder 'Microsoft.VirtualMachineImages/imageTemplates@2020-02-14'={
-  name:'aibdemo'
+  name: azureImageBuilderName
   location: location
   identity:{
     type:'UserAssigned'
     userAssignedIdentities:{
-      '${userAssignedManagedIdentity.id}': {}
+      '${azureImageBuilderIdentity.id}': {}
     }
   }
   properties:{
-   source:{
-      type:'PlatformImage'
-      publisher:'MicrosoftWindowsServer'
-      offer:'WindowsServer'
-      sku:'2019-Datacenter'
-      version:'latest'
-    }
-    customize:[
-      {
-        type:'PowerShell'
-        name:'installIIS'
-        runElevated:true
-        inline:[
-          'Install-WindowsFeature -Name Web-Mgmt-Tools,Web-App-Dev,Web-Security,Web-Performance, Web-Webserver,Web-Application-Proxy -IncludeAllSubFeature'
+    source: azureImageBuilderSource
+    customize: [
+     {
+        type: 'PowerShell'
+        name: 'installIIS'
+        runElevated: true
+        inline: [
+          loadTextContent('aib-customize.ps1')
         ]
       }
     ]
-   distribute:[
-     {
-       type:'SharedImage'
-       galleryImageId:image.id
-       replicationRegions:[
-        location
+    distribute: [
+      {
+        type: 'SharedImage'
+        galleryImageId: image.id
+        replicationRegions: [
+          location
         ]
-       runOutputName:'runoutputname'
-     }
-   ]
+        runOutputName: 'runoutputname'
+      }
+    ]
   }
 }
 
-output imageid string = image.id
+resource azureImageBuilderIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+  location: location
+  name: azureImageBuilderIdentityName
+}
+
+resource azureImageBuilderIdentityRole 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+  scope: sharedImageGallery
+  name: guid(sharedImageGallery.id, azureImageBuilderIdentity.id, roleDefinitionIds.Contributor.id)
+  properties: {
+    principalType: 'ServicePrincipal'
+    principalId: azureImageBuilderIdentity.properties.principalId
+    roleDefinitionId: roleDefinitionIds.Contributor.id
+    description: 'Allows Azure Image Builder to write images to the shared image gallery.'
+  }
+}
+
+output imageResourceId string = image.id
