@@ -1,15 +1,22 @@
 @description('The location into which the Azure resources should be deployed.')
-param location string = 'australiaeast'
+param location string
 
-var sharedImageGalleryName = 'aibsig'
+var imageName = 'win2k19iis'
+var imageIdentifier = {
+  offer: 'Windows'
+  publisher: 'Demo'
+  sku: '2019iis'
+}
+var azureImageBuilderName = 'aibdemo'
 var azureImageBuilderSource = {
-  type:'PlatformImage'
-  publisher:'MicrosoftWindowsServer'
-  offer:'WindowsServer'
-  sku:'2019-Datacenter'
-  version:'latest'
+  type: 'PlatformImage'
+  publisher: 'MicrosoftWindowsServer'
+  offer: 'WindowsServer'
+  sku: '2019-Datacenter'
+  version: 'latest'
 }
 var azureImageBuilderIdentityName = 'aibuseridentity'
+var sharedImageGalleryName = 'aibsig'
 var roleDefinitionIds = {
   Owner: {
     id: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')
@@ -22,29 +29,18 @@ var roleDefinitionIds = {
   }
 }
 
-resource sharedImageGallery 'Microsoft.Compute/galleries@2020-09-30' = {
-  location: location
-  name: sharedImageGalleryName
-}
-
 resource image 'Microsoft.Compute/galleries/images@2020-09-30' = {
   parent: sharedImageGallery
-  name: 'win2k19iis'
+  name: imageName
   location: location
   properties: {
     osState: 'Generalized'
     osType: 'Windows'
-    identifier: {
-      offer: 'Windows'
-      publisher: 'Demo'
-      sku: '2019iis'
-    }
+    identifier: imageIdentifier
   }
 }
 
-var azureImageBuilderName = 'aibdemo'
-
-resource azureImageBuilder 'Microsoft.VirtualMachineImages/imageTemplates@2020-02-14'={
+resource azureImageBuilder 'Microsoft.VirtualMachineImages/imageTemplates@2020-02-14' = {
   name: azureImageBuilderName
   location: location
   identity:{
@@ -61,7 +57,7 @@ resource azureImageBuilder 'Microsoft.VirtualMachineImages/imageTemplates@2020-0
         name: 'installIIS'
         runElevated: true
         inline: [
-          loadTextContent('scripts/aib-customize.ps1')
+          loadTextContent('../scripts/aib-customize.ps1')
         ]
       }
     ]
@@ -94,4 +90,10 @@ resource azureImageBuilderIdentityRole 'Microsoft.Authorization/roleAssignments@
   }
 }
 
+resource sharedImageGallery 'Microsoft.Compute/galleries@2020-09-30' = {
+  location: location
+  name: sharedImageGalleryName
+}
+
 output imageResourceId string = image.id
+output azureImageBuilderName string = azureImageBuilder.name

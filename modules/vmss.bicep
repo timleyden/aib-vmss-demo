@@ -1,11 +1,11 @@
 @description('The location into which the Azure resources should be deployed.')
-param location string = 'australiaeast'
+param location string
 
 @description('The resource ID of the image to deploy to the virtual machine.')
 param vmssImageResourceId string
 
 @description('The username for the administrator account on the VMSS instances.')
-param vmssAdministratorUsername string = 'sysadmin'
+param vmssAdministratorUsername string
 
 @secure()
 @description('The password for the administrator account on the VMSS instances.')
@@ -53,7 +53,7 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-03-01' = {
               type: 'CustomScriptExtension'
               typeHandlerVersion: '1.10'
               protectedSettings: {
-                commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -EncodedCommand ${loadFileAsBase64('scripts/vmss-configure-iis.ps1')}'
+                commandToExecute: 'powershell.exe -ExecutionPolicy Unrestricted -EncodedCommand ${loadFileAsBase64('../scripts/vmss-configure-iis.ps1')}'
               }
             }
           }
@@ -115,7 +115,7 @@ resource vmssDiagnosticStorage 'Microsoft.Storage/storageAccounts@2021-04-01'={
   sku: vmssDiagnosticStorageAccountSku
 }
 
-module network 'modules/vmss-network.bicep' = {
+module network 'vmss-network.bicep' = {
   name: 'vmss-network'
   params: {
     vnetName: vnetName    
