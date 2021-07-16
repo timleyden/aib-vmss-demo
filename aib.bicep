@@ -1,5 +1,6 @@
-
+@description('The location into which the Azure resources should be deployed.')
 param location string = 'australiaeast'
+
 var roleDefinitionId = {
   Owner: {
     id: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')
@@ -12,23 +13,26 @@ var roleDefinitionId = {
   }
 }
 
-resource uaidentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+resource userAssignedManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   location: location
   name: 'aibuseridentity'
 }
+
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
-  name: guid(sig.id, uaidentity.id, roleDefinitionId.Contributor.id)
+  name: guid(sig.id, userAssignedManagedIdentity.id, roleDefinitionId.Contributor.id)
   scope: sig
   properties: {
     principalType: 'ServicePrincipal'
-    principalId: uaidentity.properties.principalId
+    principalId: userAssignedManagedIdentity.properties.principalId
     roleDefinitionId: roleDefinitionId.Contributor.id
   }
 }
+
 resource sig 'Microsoft.Compute/galleries@2020-09-30' = {
   location: location
   name: 'aibsig'
 }
+
 resource image 'Microsoft.Compute/galleries/images@2020-09-30' = {
   parent:sig
   name: 'win2k19iis'
@@ -43,13 +47,14 @@ resource image 'Microsoft.Compute/galleries/images@2020-09-30' = {
     }
   }
 }
-resource aib 'Microsoft.VirtualMachineImages/imageTemplates@2020-02-14'={
+
+resource azureImageBuilder 'Microsoft.VirtualMachineImages/imageTemplates@2020-02-14'={
   name:'aibdemo'
   location: location
   identity:{
     type:'UserAssigned'
     userAssignedIdentities:{
-      '${uaidentity.id}': {}
+      '${userAssignedManagedIdentity.id}': {}
     }
   }
   properties:{
@@ -82,4 +87,5 @@ resource aib 'Microsoft.VirtualMachineImages/imageTemplates@2020-02-14'={
    ]
   }
 }
+
 output imageid string = image.id
