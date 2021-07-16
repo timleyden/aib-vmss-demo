@@ -8,6 +8,12 @@ param vmssAdministratorUsername string = 'sysadmin'
 @description('The password for the administrator account on the VMSS instances.')
 param vmssAdministratorPassword string 
 
+/* This Bicep file does the following:
+ - Deploys Azure Image Builder and a shared image gallery.
+ - Runs Azure Image Builder to build an image.
+ - Deploys a VM scale set that uses the image.
+*/
+
 module azureImageBuilder 'modules/aib.bicep' = {
   name: 'azure-image-builder'
   params: {

@@ -1,6 +1,9 @@
 @description('The location into which the Azure resources should be deployed.')
 param location string
 
+@description('The name of the shared image gallery.')
+param sharedImageGalleryName string = 'aibsig${uniqueString(resourceGroup().id)}'
+
 var imageName = 'win2k19iis'
 var imageIdentifier = {
   offer: 'Windows'
@@ -16,7 +19,6 @@ var azureImageBuilderSource = {
   version: 'latest'
 }
 var azureImageBuilderIdentityName = 'aibuseridentity'
-var sharedImageGalleryName = 'aibsig'
 var roleDefinitionIds = {
   Owner: {
     id: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')
@@ -79,7 +81,7 @@ resource azureImageBuilderIdentity 'Microsoft.ManagedIdentity/userAssignedIdenti
   name: azureImageBuilderIdentityName
 }
 
-resource azureImageBuilderIdentityRole 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+resource azureImageBuilderIdentityRoleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
   scope: sharedImageGallery
   name: guid(sharedImageGallery.id, azureImageBuilderIdentity.id, roleDefinitionIds.Contributor.id)
   properties: {

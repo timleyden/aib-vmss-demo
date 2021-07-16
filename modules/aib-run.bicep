@@ -8,7 +8,7 @@ var contributorRoleDefinitionId = subscriptionResourceId('Microsoft.Authorizatio
 resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   name: deploymentScriptName
   location: resourceGroup().location
-  kind: 'AzurePowerShell'
+  kind: 'AzureCLI'
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
@@ -16,7 +16,7 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
     }
   }
   properties: {
-    azPowerShellVersion: '3.0'
+    azCliVersion: 'latest'
     environmentVariables: [
       {
         name: 'AzureImageBuilderResourceId'
@@ -24,7 +24,7 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
       }
     ]
     scriptContent: '''
-      Invoke-AzResourceAction -Action Run -ResourceId $env:AzureImageBuilderResourceId
+      az image builder run --ids $AzureImageBuilderResourceId
     '''
     retentionInterval: 'P1D'
   }
@@ -42,9 +42,10 @@ resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-prev
   name: guid(azureImageBuilder.id, userAssignedIdentity.id, contributorRoleDefinitionId)
   scope: azureImageBuilder
   properties: {
-    roleDefinitionId: contributorRoleDefinitionId
-    principalId: userAssignedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
+    principalId: userAssignedIdentity.properties.principalId
+    roleDefinitionId: contributorRoleDefinitionId
+    description: 'Allows the deployment script to execute the Run action on the Azure Image Builder resource.'
   }
 }
 
