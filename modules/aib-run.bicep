@@ -16,7 +16,7 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
     }
   }
   properties: {
-    azCliVersion: 'latest'
+    azCliVersion: '2.9.1'
     environmentVariables: [
       {
         name: 'AzureImageBuilderResourceId'
