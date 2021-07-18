@@ -4,16 +4,8 @@ param location string
 @description('The resource ID of the image to deploy to the virtual machine.')
 param vmssImageResourceId string
 
-@description('The username for the administrator account on the VMSS instances.')
-param vmssAdministratorUsername string
-
-@secure()
-@description('The password for the administrator account on the VMSS instances.')
-param vmssAdministratorPassword string 
-
 var vnetName = 'vmssvnet'
 var vmssName = 'vmsssig'
-var vmssComputerNamePrefix = 'vmsssig'
 var vmssSku = {
   capacity: 2
   name: 'Standard_D1_v2'
@@ -42,6 +34,7 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-03-01' = {
         osDisk: {
           createOption: 'FromImage'
           caching: 'ReadWrite'
+          osType:'Windows'
         }
       }
       extensionProfile: {
@@ -53,17 +46,11 @@ resource vmss 'Microsoft.Compute/virtualMachineScaleSets@2021-03-01' = {
               type: 'CustomScriptExtension'
               typeHandlerVersion: '1.10'
               protectedSettings: {
-                commandToExecute:'powershell.exe -ExecutionPolicy Unrestricted -Command "& Invoke-Expression -Command ([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String(\'${loadFileAsBase64('../scripts/vmss-configure-iis.ps1')}\')))"'
+                commandToExecute:'powershell.exe -ExecutionPolicy Unrestricted -Command "& Invoke-Expression -Command ([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String(\'${loadFileAsBase64('../scripts/vmss-configure-iis.ps1')}\'))+[System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String(\'${loadFileAsBase64('../scripts/vmss-sethostname.ps1')}\')))"'
               }
             }
           }
         ]
-      }
-      osProfile: {
-        computerNamePrefix: vmssComputerNamePrefix
-        adminUsername: vmssAdministratorUsername
-        adminPassword: vmssAdministratorPassword
-        windowsConfiguration: {}
       }
       diagnosticsProfile: {
         bootDiagnostics: {

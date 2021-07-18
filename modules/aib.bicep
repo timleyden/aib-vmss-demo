@@ -3,7 +3,10 @@ param location string
 
 @description('The name of the shared image gallery.')
 param sharedImageGalleryName string = 'aibsig${uniqueString(resourceGroup().id)}'
-
+param adminuser string = 'sysadmin'
+@secure()
+@description('The password for the administrator account on the VMSS instances.')
+param vmssAdministratorPassword string 
 var imageName = 'win2k19iis'
 var imageIdentifier = {
   offer: 'Windows'
@@ -36,7 +39,7 @@ resource image 'Microsoft.Compute/galleries/images@2020-09-30' = {
   name: imageName
   location: location
   properties: {
-    osState: 'Generalized'
+    osState: 'Specialized'
     osType: 'Windows'
     identifier: imageIdentifier
   }
@@ -52,6 +55,10 @@ resource azureImageBuilder 'Microsoft.VirtualMachineImages/imageTemplates@2020-0
     }
   }
   properties:{
+    buildTimeoutInMinutes:300
+    vmProfile:{
+      vmSize:'Standard_D2_v2'
+    }
     source: azureImageBuilderSource
     customize: [
      {
@@ -60,6 +67,16 @@ resource azureImageBuilder 'Microsoft.VirtualMachineImages/imageTemplates@2020-0
         runElevated: true
         inline: [
           loadTextContent('../scripts/aib-customize.ps1')
+        ]
+      }
+      {
+        type: 'PowerShell'
+        name: 'skipsysprep'
+        runElevated: true
+        inline: [
+          '$username = "${adminuser}"'
+          '$password = ConvertTo-SecureString -String "${vmssAdministratorPassword}" -AsPlainText -Force'
+          loadTextContent('../scripts/aib-skipsysprep.ps1')
         ]
       }
     ]
@@ -71,6 +88,10 @@ resource azureImageBuilder 'Microsoft.VirtualMachineImages/imageTemplates@2020-0
           location
         ]
         runOutputName: 'runoutputname'
+      }
+      {
+        type:'VHD'
+        runOutputName:'runoutputname2'
       }
     ]
   }

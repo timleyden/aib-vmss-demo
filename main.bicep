@@ -12,6 +12,8 @@ module azureImageBuilder 'modules/aib.bicep' = {
   name: 'azure-image-builder'
   params: {
     location: location
+    adminuser: vmssAdministratorUsername
+    vmssAdministratorPassword:vmssAdministratorPassword
   }
 }
 
@@ -29,8 +31,6 @@ module vmss 'modules/vmss.bicep' = {
   ]
   params: {
     location: location
-    vmssAdministratorUsername: vmssAdministratorUsername
-    vmssAdministratorPassword: vmssAdministratorPassword
     vmssImageResourceId: azureImageBuilder.outputs.imageResourceId
   }
 }

@@ -19,6 +19,7 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   }
   properties: {
     azCliVersion: '2.9.1'
+    timeout:'P1D'
     environmentVariables: [
       {
         name: 'AzureImageBuilderResourceId'
