@@ -34,3 +34,5 @@ module vmss 'modules/vmss.bicep' = {
     vmssImageResourceId: azureImageBuilder.outputs.imageResourceId
   }
 }
+
+output loadBalancerPublicIPAddressFqdn string = vmss.outputs.loadBalancerPublicIPAddressFqdn

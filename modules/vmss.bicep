@@ -129,3 +129,5 @@ resource vnet 'Microsoft.Network/virtualNetworks@2021-02-01' existing = {
     name: 'default'
   }
 }
+
+output loadBalancerPublicIPAddressFqdn string = network.outputs.loadBalancerPublicIPAddressFqdn

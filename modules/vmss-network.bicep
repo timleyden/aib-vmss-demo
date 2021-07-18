@@ -153,3 +153,4 @@ resource loadBalancer 'Microsoft.Network/loadBalancers@2021-02-01' = {
 output networkSecurityGroupResourceId string = networkSecurityGroup.id
 output loadBalancerBackendAddressPoolResourceId string = loadBalancer.properties.backendAddressPools[0].id
 output loadBalancerInboundNatPoolResourceId string = loadBalancer.properties.inboundNatPools[0].id
+output loadBalancerPublicIPAddressFqdn string = loadBalancerPublicIPAddress.properties.dnsSettings.fqdn
