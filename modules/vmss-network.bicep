@@ -58,7 +58,6 @@ resource networkSecurityGroup 'Microsoft.Network/networkSecurityGroups@2021-02-0
           sourceAddressPrefix: '*'
           sourcePortRange: '*'
           destinationAddressPrefix: '*'
-
         }
       }
     ]

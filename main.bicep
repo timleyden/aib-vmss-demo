@@ -1,5 +1,5 @@
 @description('The location into which the Azure resources should be deployed.')
-param location string = 'australiaeast'
+param location string = resourceGroup().location
 
 @description('The username for the administrator account on the VMSS instances.')
 param vmssAdministratorUsername string = 'sysadmin'
@@ -18,6 +18,7 @@ module azureImageBuilder 'modules/aib.bicep' = {
 module azureImageBuilderRun 'modules/aib-run.bicep' = {
   name: 'azure-image-builder-run'
   params: {
+    location: location
     azureImageBuilderName: azureImageBuilder.outputs.azureImageBuilderName
   }
 }

@@ -1,3 +1,6 @@
+@description('The location into which the Azure resources should be deployed.')
+param location string
+
 @description('The name of the Azure Image Builder resource.')
 param azureImageBuilderName string
 
@@ -9,7 +12,7 @@ var contributorRoleDefinitionId = subscriptionResourceId('Microsoft.Authorizatio
 
 resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
   name: deploymentScriptName
-  location: resourceGroup().location
+  location: location
   kind: 'AzureCLI'
   identity: {
     type: 'UserAssigned'
@@ -37,7 +40,7 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
 
 resource userAssignedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
   name: userAssignedIdentityName
-  location: resourceGroup().location
+  location: location
 }
 
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
