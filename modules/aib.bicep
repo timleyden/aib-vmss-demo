@@ -13,6 +13,7 @@ var imageIdentifier = {
   publisher: 'Demo'
   sku: '2019iis'
 }
+var azureImageBuilderRunOutputName = 'VHD'
 var azureImageBuilderName = 'aibdemo'
 var azureImageBuilderSource = {
   type: 'PlatformImage'
@@ -82,16 +83,8 @@ resource azureImageBuilder 'Microsoft.VirtualMachineImages/imageTemplates@2020-0
     ]
     distribute: [
       {
-        type: 'SharedImage'
-        galleryImageId: image.id
-        replicationRegions: [
-          location
-        ]
-        runOutputName: 'runoutputname'
-      }
-      {
         type:'VHD'
-        runOutputName:'runoutputname2'
+        runOutputName:azureImageBuilderRunOutputName
       }
     ]
   }
@@ -120,3 +113,5 @@ resource sharedImageGallery 'Microsoft.Compute/galleries@2020-09-30' = {
 
 output imageResourceId string = image.id
 output azureImageBuilderName string = azureImageBuilder.name
+output imageResourceName string = '${sharedImageGalleryName}/${imageName}'//todo: do this better
+output azureImageBuilderRunOutputName string = azureImageBuilderRunOutputName

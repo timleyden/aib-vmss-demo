@@ -21,13 +21,26 @@ module azureImageBuilderRun 'modules/aib-run.bicep' = {
   name: 'azure-image-builder-run'
   params: {
     azureImageBuilderName: azureImageBuilder.outputs.azureImageBuilderName
+    location:location  
+  }
+}
+module imageVersion 'modules/sig-imagetemplate.bicep'={
+  name:'image-version'  
+  dependsOn:[
+    azureImageBuilderRun
+  ]
+  params:{
+    azureImageBuilderName: azureImageBuilder.outputs.azureImageBuilderName
+    imageReferenceName:azureImageBuilder.outputs.imageResourceName
+    location:location
+    runOutputName:azureImageBuilder.outputs.azureImageBuilderRunOutputName
   }
 }
 
 module vmss 'modules/vmss.bicep' = {
   name: 'vm-scale-set'
   dependsOn: [
-    azureImageBuilderRun // Ensure that the image is actually built before we try to use it in a VMSS.
+    imageVersion // Ensure that the image is actually built before we try to use it in a VMSS.
   ]
   params: {
     location: location
