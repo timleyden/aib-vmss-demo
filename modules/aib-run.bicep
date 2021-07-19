@@ -2,9 +2,9 @@
 param location string
 @description('The name of the Azure Image Builder resource.')
 param azureImageBuilderName string
-
+param runOutputName string
 var deploymentScriptName = 'aib-run'
-var userAssignedIdentityName = 'configDeployer'
+var userAssignedIdentityName = 'aibuseridentity'
 var contributorRoleDefinitionId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')
 
 
@@ -28,9 +28,16 @@ resource deploymentScript 'Microsoft.Resources/deploymentScripts@2020-10-01' = {
         name: 'AzureImageBuilderResourceId'
         value: azureImageBuilder.id
       }
+      {
+        name: 'RunOutputName'
+        value:runOutputName
+      }
     ]
     scriptContent: '''
       az image builder run --ids $AzureImageBuilderResourceId
+      storagename=$(az resource show --ids "$AzureImageBuilderResourceId/runOutputs/$RunOutputName" --query properties.artifactUri | sed -e 's|^[^/]*//||' -e 's|\..*$||')
+      echo $storagename
+      az storage account show -n $storagename  | jq -c '{Result: {id: .id}}' > $AZ_SCRIPTS_OUTPUT_PATH
     '''
     retentionInterval: 'P1D'
   }
@@ -58,4 +65,6 @@ resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-prev
 resource azureImageBuilder 'Microsoft.VirtualMachineImages/imageTemplates@2020-02-14' existing = {
   name: azureImageBuilderName
 }
+
+output imageStorageId string = deploymentScript.properties.outputs.Result.id
 

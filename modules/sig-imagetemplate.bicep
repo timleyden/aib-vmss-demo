@@ -5,6 +5,7 @@ param azureImageBuilderName string
 @description('The name of the Azure Image Builder resource.')
 param imageReferenceName string
 param runOutputName string
+param storageAccountId string
 var imageVersionName = '1.1.1'
 
 resource imagedef 'Microsoft.Compute/galleries/images@2020-09-30' existing = {
@@ -29,6 +30,7 @@ resource azureImageVersion 'Microsoft.Compute/galleries/images/versions@2020-09-
       osDiskImage:{
         source:{
           uri:runOutput.properties.artifactUri
+          id:storageAccountId
         }
         hostCaching:'ReadOnly'
       }

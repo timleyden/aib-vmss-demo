@@ -22,6 +22,7 @@ module azureImageBuilderRun 'modules/aib-run.bicep' = {
   params: {
     azureImageBuilderName: azureImageBuilder.outputs.azureImageBuilderName
     location:location  
+    runOutputName:azureImageBuilder.outputs.azureImageBuilderRunOutputName
   }
 }
 module imageVersion 'modules/sig-imagetemplate.bicep'={
@@ -34,6 +35,7 @@ module imageVersion 'modules/sig-imagetemplate.bicep'={
     imageReferenceName:azureImageBuilder.outputs.imageResourceName
     location:location
     runOutputName:azureImageBuilder.outputs.azureImageBuilderRunOutputName
+    storageAccountId:azureImageBuilderRun.outputs.imageStorageId
   }
 }
 
