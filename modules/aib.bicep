@@ -52,6 +52,9 @@ resource azureImageBuilder 'Microsoft.VirtualMachineImages/imageTemplates@2020-0
     }
   }
   properties:{
+    vmProfile:{
+      vmSize:'Standard_D2_v2'
+    }
     source: azureImageBuilderSource
     customize: [
      {
@@ -61,6 +64,10 @@ resource azureImageBuilder 'Microsoft.VirtualMachineImages/imageTemplates@2020-0
         inline: [
           loadTextContent('../scripts/aib-customize.ps1')
         ]
+      }
+      {
+        type:'WindowsRestart'
+        name:'restart post iis install' 
       }
     ]
     distribute: [
